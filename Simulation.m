@@ -44,7 +44,7 @@ y_acceleration_final = 0;
 
 t_0 = 0;
 t_final = 2;
-delta_t = 0.1;
+delta_t = 0.001;
 time = t_0 : delta_t : 2;
 
 %%
@@ -82,9 +82,11 @@ y_trajectory = GenerateTaskTrajectory(time, delta_t, y_coefficients);
 
 %plot(time, x_trajectory)
 %plot(time, q1_trajectory)
-x_q1 = l1 * sin(q1_trajectory);
+%the following variables hold the x and y coords of position 
+x_q1 = l1 * sin(q1_trajectory); 
 y_q1 = -l1 * cos(q1_trajectory);
 
+%the following are the coordinates of the termination link
 x_tot = x_q1 + l2 .* sin(q1_trajectory + q2_trajectory);
 y_tot = y_q1 - l2 .* cos(q1_trajectory + q2_trajectory);
 
@@ -115,10 +117,23 @@ chi5 = m2 * lc2;
 
 chi = [chi1 ; chi2 ; chi3 ; chi4 ; chi5];
 
+Y = double.empty;
+torque = double.empty;
+for n = 1:length(time)
+    q1_accel_n = q1_acceleration(n);
+    q1_veloc_n = q1_velocity(n);
+    q1_traj_n = q1_trajectory(n);
+    q2_accel_n = q2_acceleration(n);
+    q2_veloc_n = q2_velocity(n);
+    q2_traj_n = q2_trajectory(n);
+    Y_12n = cos(q2_traj_n)*(2*q1_accel_n + q2_accel_n) - sin(q2_traj_n)*(q1_veloc_n^2 + 2*q1_veloc_n*q2_veloc_n);
+    Y_22n = cos(q2_traj_n)*q1_accel_n + sin(q2_traj_n)*(q1_veloc_n^2);
+    Y_n = [q1_accel_n,  Y_12n,  q2_accel_n,              g*sin(q1_traj_n),  g*sin(q1_traj_n + q2_traj_n); ...
+           0,           Y_22n,  q1_accel_n + q2_accel_n, 0,                 g*sin(q1_traj_n + q2_traj_n)];
+    torque_n = [torque_1(n); torque_2(n)];
+    torque = [torque; torque_n];
+       Y = [Y; Y_n];
+end
 
-
-
-
-
-
-                                                
+chihat = (transpose(Y) * Y)\ transpose(Y) * torque;
+(chi - chihat)./chi * 100
