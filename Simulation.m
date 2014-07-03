@@ -11,32 +11,33 @@ l2 = 0.26;
 
 % Distance from origin of each link to center of mass
 lc1 = 0.0983;
-lc2 = 0.0229;
+lc2_base = 0.0229;
 
 % Mass of links
 m1 = 6.5225;
-m2 = 2.0458;
+m2_base = 2.0458;
 
 % Inertia relative to center of mass
 I1 = 0.1213;
-I2 = 0.0116;
+I2_base = 0.0116;
 
 % Gravity term
 g = 9.81;
 
+[m2, lc2, I2] = AddLoad(m2_base, lc2_base, I2_base, 2, l2 - .0254, .0254^2);
 
 %%
 % Trajectory specifications
 
 x_initial = 0; 
-x_final = .3;
+x_final = 0;
 x_velocity_initial = 0;
 x_velocity_final = 0;
 x_acceleration_initial = 0;
 x_acceleration_final = 0;
 
-y_initial = -.5;
-y_final = .4;
+y_initial = -.51;
+y_final = -.3;
 y_velocity_initial = 0;
 y_velocity_final = 0;
 y_acceleration_initial = 0;
@@ -46,6 +47,8 @@ t_0 = 0;
 t_final = 2;
 delta_t = 0.001;
 time = t_0 : delta_t : 2;
+num_samples = 2000 % this is the number of samples across the whole
+%trajectory
 
 %%
 % Generate the polynomial coefficients of the trajectory
@@ -119,7 +122,10 @@ chi = [chi1 ; chi2 ; chi3 ; chi4 ; chi5];
 
 Y = double.empty;
 torque = double.empty;
-for n = 1:length(time)
+%for all time. 
+%in steps proportional to num_samples. so if num samples is 3, 1/3rd of
+%time passes before the next sample is "calclulated"
+for n = 1:floor(length(time)/(num_samples - 1)):length(time)
     q1_accel_n = q1_acceleration(n);
     q1_veloc_n = q1_velocity(n);
     q1_traj_n = q1_trajectory(n);
@@ -136,4 +142,21 @@ for n = 1:length(time)
 end
 
 chihat = (transpose(Y) * Y)\ transpose(Y) * torque;
-(chi - chihat)./chi * 100
+chi_percent_error = abs(chihat - chi)./chi * 100;
+
+m2_hat = (chihat(4)-m1*lc1)/l1;
+lc2_hat = chihat(5)/m2_hat;
+I2_hat = chihat(3)-m2_hat*lc2_hat^2;
+
+m2_percent_error = abs(m2_hat - m2)./m2 * 100;
+lc2_percent_error = abs(lc2_hat - lc2)./lc2 * 100;
+I2_percent_error = abs(I2_hat - I2)./I2 * 100;
+
+chi_results = [chi chihat chi_percent_error];
+param_results = ...
+    [m2 m2_hat m2_percent_error; ...
+    lc2 lc2_hat lc2_percent_error; ...
+    I2 I2_hat I2_percent_error];
+
+printmat(chi_results, 'Chi Results', 'chi1 chi2 chi3 chi4 chi5', 'chi chihat chi_%_error')
+printmat(param_results, 'Parameter Results', 'mass ctr_of_mass inertia', 'orig calc %_error')
