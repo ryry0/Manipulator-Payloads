@@ -1,90 +1,63 @@
 %%This will be a simulation of the 2 DOF manipulator
-% The main variables are left undefined so that you can 
-% customize them at runtime.
+%
 
 
 %%
 % Physical parameters of the Pelican robot arm. (m, kg, s)
 
 % Length of links
-%l1 = 0.26;
-%l2 = 0.26;
+l1 = 0.375;
+l2 = 0.3;
 
 % Distance from origin of each link to center of mass
-%lc1 = 0.0983;
-%lc2_base = 0.0229;
+lc1 = 0.195;
+lc2_base = 0.22;
 
 % Mass of links
-%m1 = 6.5225;
-%m2_base = 2.0458;
+m1 = 2.883;
+m2_base = 1.085;
 
 % Inertia relative to center of mass
-%I1 = 0.1213;
-%I2_base = 0.0116;
+I1 = 0.0345;
+I2_base = 0.013;
 
 % Gravity term
-%g = 9.81;
-%ml = 2;
-%radius_l = 0.0254;
-%Il = (ml * (radius_l^2))/2;
-[m2, lc2, I2] = AddLoad(m2_base, lc2_base, I2_base, ml, l2 - radius_l, Il);
+g = 9.81;
 
+%load parameters
+ml = 2.883;
+radius_l = 0.0254;
+Il = (ml * (radius_l^2))/2;
+lcl = 0.2744;
+%[m2, lc2, I2] = AddLoad(m2_base, lc2_base, I2_base, ml, l2 - radius_l, Il);
+%[m2, lc2, I2] = AddLoad(m2_base, lc2_base, I2_base, ml, 0.2744, Il);
+I2 = 0.0296;
+lc2 = 0.2744;
+m2 = 3.401;
 %%
 % Trajectory specifications
 
-x_initial = 0; 
-x_final = 0;
-x_velocity_initial = 0;
-x_velocity_final = 0;
-x_acceleration_initial = 0;
-x_acceleration_final = 0;
-
-y_initial = -.51;
-y_final = -.3;
-y_velocity_initial = 0;
-y_velocity_final = 0;
-y_acceleration_initial = 0;
-y_acceleration_final = 0;
+%x_initial = -.3; 
+%x_final = .3;
+%x_velocity_initial = 0;
+%x_velocity_final = 0;
+%x_acceleration_initial = 0;
+%x_acceleration_final = 0;
+%
+%y_initial = -.4;
+%y_final = -.2;
+%y_velocity_initial = 0;
+%y_velocity_final = 0;
+%y_acceleration_initial = 0;
+%y_acceleration_final = 0;
 
 t_0 = 0;
-t_final = 2;
+%t_final = 2;
 delta_t = 0.001;
-time = t_0 : delta_t : 2;
-num_samples = 2000 % this is the number of samples across the whole
+time = t_0 : delta_t : t_final;
+num_samples = t_final/delta_t; % this is the number of samples across the whole
 %trajectory
 
-%%
-% Generate the polynomial coefficients of the trajectory
-x_coefficients = GenerateTaskTrajectoryCoeff(   t_0, ...
-                                                t_final, ...
-                                                x_initial, ...
-                                                x_velocity_initial, ...
-                                                x_acceleration_initial, ...
-                                                x_final, ...
-                                                x_velocity_final, ...
-                                                x_acceleration_final);
-
-y_coefficients = GenerateTaskTrajectoryCoeff(   t_0, ...
-                                                t_final, ...
-                                                y_initial, ...
-                                                y_velocity_initial, ...
-                                                y_acceleration_initial, ...
-                                                y_final, ...
-                                                y_velocity_final, ...
-                                                y_acceleration_final);
-                                                
-%%
-% Generate Task Space Trajectories
-
-x_trajectory = GenerateTaskTrajectory(time, delta_t, x_coefficients);
-y_trajectory = GenerateTaskTrajectory(time, delta_t, y_coefficients);
-
-%%
-% Generate Joint Space Trajectory
-
-[   q1_trajectory, q1_velocity, q1_acceleration, ...
-    q2_trajectory, q2_velocity, q2_acceleration] = ...
-    GenerateJointTrajectory(x_trajectory, y_trajectory, delta_t, l1, l2);
 
 %plot(time, x_trajectory)
 %plot(time, q1_trajectory)
@@ -125,6 +98,9 @@ chi = [chi1 ; chi2 ; chi3 ; chi4 ; chi5];
 
 Y = double.empty;
 torque = double.empty;
+%for all time. 
+%in steps proportional to num_samples. so if num samples is 3, 1/3rd of
+%time passes before the next sample is "calclulated"
 for n = 1:floor(length(time)/(num_samples - 1)):length(time)
     q1_accel_n = q1_acceleration(n);
     q1_veloc_n = q1_velocity(n);
@@ -158,5 +134,5 @@ param_results = ...
     lc2 lc2_hat lc2_percent_error; ...
     I2 I2_hat I2_percent_error];
 
-printmat(chi_results, 'Chi Results', 'chi1 chi2 chi3 chi4 chi5', 'chi chihat chi_%_error')
-printmat(param_results, 'Parameter Results', 'mass ctr_of_mass inertia', 'orig calc %_error')
+printmat_v2(chi_results, 'Chi Results', 'chi1 chi2 chi3 chi4 chi5', 'chi& chihat& chi_%_error', '&')
+printmat_v2(param_results, 'Parameter Results', 'mass ctr_of_mass inertia', 'orig& calc& %_error', '&')

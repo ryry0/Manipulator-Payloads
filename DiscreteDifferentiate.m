@@ -1,6 +1,4 @@
 function [x_derivative ] = DiscreteDifferentiate(x,delta_t)
-%UNTITLED6 Summary of this function goes here
-%   Detailed explanation goes here
 x_derivative = zeros(size(x)); % prealloc for speed
 
 for n = 1:length(x)

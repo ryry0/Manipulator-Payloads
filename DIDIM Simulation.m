@@ -1,46 +1,43 @@
-%%This will be a simulation of the 2 DOF manipulator
-% The main variables are left undefined so that you can 
-% customize them at runtime.
+%%This will be the DIDIM simulation of the 2 DOF manipulator
+%
 
 
 %%
 % Physical parameters of the Pelican robot arm. (m, kg, s)
 
 % Length of links
-%l1 = 0.26;
-%l2 = 0.26;
+l1 = 0.26;
+l2 = 0.26;
 
 % Distance from origin of each link to center of mass
-%lc1 = 0.0983;
-%lc2_base = 0.0229;
+lc1 = 0.0983;
+lc2_base = 0.0229;
 
 % Mass of links
-%m1 = 6.5225;
-%m2_base = 2.0458;
+m1 = 6.5225;
+m2_base = 2.0458;
 
 % Inertia relative to center of mass
-%I1 = 0.1213;
-%I2_base = 0.0116;
+I1 = 0.1213;
+I2_base = 0.0116;
 
 % Gravity term
-%g = 9.81;
-%ml = 2;
-%radius_l = 0.0254;
-%Il = (ml * (radius_l^2))/2;
-[m2, lc2, I2] = AddLoad(m2_base, lc2_base, I2_base, ml, l2 - radius_l, Il);
+g = 9.81;
+
+[m2, lc2, I2] = AddLoad(m2_base, lc2_base, I2_base, 2, l2 - .0254, .0254^2);
 
 %%
 % Trajectory specifications
 
-x_initial = 0; 
-x_final = 0;
+x_initial = -.2; 
+x_final = .2;
 x_velocity_initial = 0;
 x_velocity_final = 0;
 x_acceleration_initial = 0;
 x_acceleration_final = 0;
 
-y_initial = -.51;
-y_final = -.3;
+y_initial = -.4;
+y_final = -.4;
 y_velocity_initial = 0;
 y_velocity_final = 0;
 y_acceleration_initial = 0;
@@ -50,8 +47,6 @@ t_0 = 0;
 t_final = 2;
 delta_t = 0.001;
 time = t_0 : delta_t : 2;
-num_samples = 2000 % this is the number of samples across the whole
-%trajectory
 
 %%
 % Generate the polynomial coefficients of the trajectory
@@ -125,7 +120,7 @@ chi = [chi1 ; chi2 ; chi3 ; chi4 ; chi5];
 
 Y = double.empty;
 torque = double.empty;
-for n = 1:floor(length(time)/(num_samples - 1)):length(time)
+for n = 1:length(time)
     q1_accel_n = q1_acceleration(n);
     q1_veloc_n = q1_velocity(n);
     q1_traj_n = q1_trajectory(n);

@@ -1,46 +1,48 @@
 %%This will be a simulation of the 2 DOF manipulator
-% The main variables are left undefined so that you can 
-% customize them at runtime.
-
+%
+%%
+% error values
+MEAN=0;
+VARIANCE=1;
 
 %%
 % Physical parameters of the Pelican robot arm. (m, kg, s)
 
 % Length of links
-%l1 = 0.26;
-%l2 = 0.26;
+l1 = 0.26;
+l2 = 0.26;
 
 % Distance from origin of each link to center of mass
-%lc1 = 0.0983;
-%lc2_base = 0.0229;
+lc1 = 0.0983;
+lc2_base = 0.0229;
 
 % Mass of links
-%m1 = 6.5225;
-%m2_base = 2.0458;
+m1 = 6.5225;
+m2_base = 2.0458;
 
 % Inertia relative to center of mass
-%I1 = 0.1213;
-%I2_base = 0.0116;
+I1 = 0.1213;
+I2_base = 0.0116;
 
 % Gravity term
-%g = 9.81;
-%ml = 2;
-%radius_l = 0.0254;
-%Il = (ml * (radius_l^2))/2;
+g = 9.81;
+ml = 2;
+radius_l = 0.0254;
+Il = (ml * (radius_l^2))/2;
 [m2, lc2, I2] = AddLoad(m2_base, lc2_base, I2_base, ml, l2 - radius_l, Il);
 
 %%
 % Trajectory specifications
 
-x_initial = 0; 
-x_final = 0;
+x_initial = .1; 
+x_final = -.1;
 x_velocity_initial = 0;
 x_velocity_final = 0;
 x_acceleration_initial = 0;
 x_acceleration_final = 0;
 
-y_initial = -.51;
-y_final = -.3;
+y_initial = -.4;
+y_final = -.4;
 y_velocity_initial = 0;
 y_velocity_final = 0;
 y_acceleration_initial = 0;
@@ -136,7 +138,7 @@ for n = 1:floor(length(time)/(num_samples - 1)):length(time)
     Y_22n = cos(q2_traj_n)*q1_accel_n + sin(q2_traj_n)*(q1_veloc_n^2);
     Y_n = [q1_accel_n,  Y_12n,  q2_accel_n,              g*sin(q1_traj_n),  g*sin(q1_traj_n + q2_traj_n); ...
            0,           Y_22n,  q1_accel_n + q2_accel_n, 0,                 g*sin(q1_traj_n + q2_traj_n)];
-    torque_n = [torque_1(n); torque_2(n)];
+    torque_n = [torque_1(n)+normrnd(MEAN,VARIANCE); torque_2(n)+normrnd(MEAN,VARIANCE)];
     torque = [torque; torque_n];
        Y = [Y; Y_n];
 end
@@ -158,5 +160,5 @@ param_results = ...
     lc2 lc2_hat lc2_percent_error; ...
     I2 I2_hat I2_percent_error];
 
-printmat(chi_results, 'Chi Results', 'chi1 chi2 chi3 chi4 chi5', 'chi chihat chi_%_error')
-printmat(param_results, 'Parameter Results', 'mass ctr_of_mass inertia', 'orig calc %_error')
+printmat_v2(chi_results, 'Chi Results', 'chi1 chi2 chi3 chi4 chi5', 'chi& chihat& chi_%_error', '&')
+printmat_v2(param_results, 'Parameter Results', 'mass ctr_of_mass inertia', 'orig& calc& %_error', '&')

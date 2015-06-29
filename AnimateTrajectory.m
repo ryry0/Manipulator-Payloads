@@ -2,7 +2,7 @@
 %it requires the trajectory.
 function AnimateTrajectory(q1_trajectory, q2_trajectory, l1, l2)
 %the following variables hold the x and y coords of position 
-axis_size = .6;
+axis_size = .7;
 x_q1 = l1 * sin(q1_trajectory); 
 y_q1 = -l1 * cos(q1_trajectory);
 
@@ -19,7 +19,7 @@ M(n)=getframe;
 end
 
 num_times=3;
-fps=1000;
+fps=10;
 movie(M,num_times, fps);
 
 end
